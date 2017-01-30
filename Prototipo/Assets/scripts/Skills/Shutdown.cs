@@ -14,8 +14,8 @@ public class Shutdown : Skill {
 	
 	}
 
-    public override void Action (Student s)
+    public override void action (Student s)
     {
-        // Student s se apaga
+        print("I've shut down student " + s.row + "x" + s.column);
     }
 }

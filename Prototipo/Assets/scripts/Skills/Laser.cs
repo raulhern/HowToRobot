@@ -17,9 +17,11 @@ public class Laser : Skill
 
     }
 
-    public override void Action(Student s)
+    public override void action(Student s)
     {
-        // Student s se destruye
+        gameManager.SendMessage("studentDestroyed", s);
+        Destroy(s.transform.gameObject,1f);
+        print("Debería estar destruido");
     }
 }
 
