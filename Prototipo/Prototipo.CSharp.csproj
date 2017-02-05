@@ -75,6 +75,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\scripts\Conflict.cs" />
     <Compile Include="Assets\scripts\GameManager.cs" />
     <Compile Include="Assets\scripts\Skill.cs" />
     <Compile Include="Assets\scripts\Skills\Count1010.cs" />
@@ -83,6 +84,7 @@
     <Compile Include="Assets\scripts\Skills\LaserChalk.cs" />
     <Compile Include="Assets\scripts\Skills\Shutdown.cs" />
     <Compile Include="Assets\scripts\Student.cs" />
+    <Compile Include="Assets\scripts\Task.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>
