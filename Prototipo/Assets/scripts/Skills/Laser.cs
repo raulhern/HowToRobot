@@ -9,6 +9,8 @@ public class Laser : Skill
     {
         stressCost = 1;
         skType = SkillType.Individual;
+        TOTAL_COOLDOWN = 1250; // 20s
+        cooldown = TOTAL_COOLDOWN;
     }
 
     // Update is called once per frame
@@ -22,6 +24,7 @@ public class Laser : Skill
         gameManager.SendMessage("studentDestroyed", s);
         Destroy(s.transform.gameObject,1f);
         print("Debería estar destruido");
+        this.toggleCooldown();
     }
 }
 

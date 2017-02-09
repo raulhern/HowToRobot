@@ -10,7 +10,7 @@ public class Student : MonoBehaviour {
 
 
     public bool activated = true;
-    public int cooldown;
+    public int cooldown=5;
 
 	// Use this for initialization
 	void Start () {
@@ -76,7 +76,7 @@ public class Student : MonoBehaviour {
             manager.SendMessage("studentClicked", this);
 
             //adaptar al tipo de skill que le ha tocado
-            cooldown = 5;
+            
         }
     }
 

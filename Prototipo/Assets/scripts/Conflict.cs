@@ -3,19 +3,14 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
+using System.Xml;
 
 public class Conflict : MonoBehaviour {
 
     //public float stressInc;
     //public float taskRed;
 
-    string[] conflictList;
-    
-    int lineCounter;
-
-
-    public TextAsset conflictsFile;
-
+    public XmlDocument conflictsReaderXML;
 
     public Conflict(string type, string name)
     {
@@ -25,7 +20,7 @@ public class Conflict : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-        conflictList = System.IO.File.ReadAllLines(@"Assets/Resources/conflicts/conflictsList.txt");
+        conflictsReaderXML = new XmlDocument();
     }
 	
 	// Update is called once per frame
@@ -35,28 +30,25 @@ public class Conflict : MonoBehaviour {
 
      public string getTypeConflict(string nameConflict)
     {
-        lineCounter = 0;
-        char delimiter = '-';
+
+
         
-        foreach(string line in conflictList)
+        conflictsReaderXML.Load(@"Assets/Resources/conflicts/conflictsListXML.xml");
+        
+        XmlNodeList nodesDocument = conflictsReaderXML.DocumentElement.SelectNodes("/ConflictsList/Conflict");
+
+        foreach (XmlNode node in nodesDocument)//reading from the XML
         {
-            //
-            print("Conflicts length: " + conflictList.Length+ " is "+line);
-            
 
-            string[] elements = line.Split(delimiter);
-
-
-            //
-            print(elements[0] + "-" + elements[1]);
-            if (elements[0] == nameConflict)
-            {
-                return elements[1];//return if it's individual, dual or massive
+            if (node.SelectSingleNode("Title").InnerText == nameConflict){
+                
+                return node.SelectSingleNode("Type").InnerText;
+                
             }
 
-            lineCounter++;
+      
 
         }
-        return null;
+        return "ERROR"; //If it has not found any matching conflict, it means that there is an error
     }
 }

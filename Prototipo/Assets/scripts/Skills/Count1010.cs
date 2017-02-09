@@ -8,7 +8,9 @@ public class Count1010 : Skill {
 	void Start () {
         stressCost = 2;
         skType = SkillType.Unstress;
-	}
+        TOTAL_COOLDOWN = 312; // 5s
+        cooldown = TOTAL_COOLDOWN;
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -28,5 +30,6 @@ public class Count1010 : Skill {
             gameManager.GetComponent<GameManager>().setStress((int)gameManager.GetComponent<GameManager>().stress/20);
         }
         // Comenzar corrutina de relajarse: gameManager.startCoroutine("Relax", CuantoRelajaEsto);
+        this.toggleCooldown();
     }
 }

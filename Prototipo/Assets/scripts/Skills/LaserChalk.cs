@@ -8,7 +8,9 @@ public class LaserChalk : Skill {
 	void Start () {
         stressCost = 2;
         skType = SkillType.Individual;
-	}
+        TOTAL_COOLDOWN = 937; // 15s
+        cooldown = TOTAL_COOLDOWN;
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -18,6 +20,8 @@ public class LaserChalk : Skill {
     public override void action(Student s)
     {
         print("le he tirado una tiza al estudiante " + s.row + "x" + s.column);
-        // Hacer que el estudiante reaccione: s.atender();
+        s.disturbActivated = false;
+        // Esto, no? Dejar de molestar because yes
+        this.toggleCooldown();
     }
 }

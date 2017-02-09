@@ -3,6 +3,9 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
+using System.Xml;
+
+using UnityEngine.SceneManagement;
 
 // public class haber si memuero
 public class GameManager : MonoBehaviour {
@@ -10,7 +13,10 @@ public class GameManager : MonoBehaviour {
     // GameObjects array
     GameObject[] skillGo; // Array a rellenar con skills para poder pasarlos a lista
     GameObject[] studentGo; // Lo mismo, pero con estudiantes
-    GameObject[] taskGo;
+
+
+    public GameObject killedSprite;
+
 
     // Lists
     List<Skill> skills = new List<Skill>();  
@@ -18,7 +24,10 @@ public class GameManager : MonoBehaviour {
         Esta lista es pública para poder añadir a mano las habilidades de este nivel
         Una vez completado el juego se debería rellenar con la información del menú
     */
-    List<Student> students = new List<Student>();
+	public Student[,] students;
+    ArrayList listeningStudents;    // Lista de estudiantes atendiendo
+    ArrayList disturbingStudents;   // Lista de estudiantes molestando
+																  
     List<Task> tasks = new List<Task>();
 
     // Iterators and selectors
@@ -30,6 +39,10 @@ public class GameManager : MonoBehaviour {
     public float stress;
     float taskCompletion;
     float totalTaskDuration;
+	
+	
+    public static int rows;
+    public static int columns;
 
     // Multipliers
     float taskMultiplier = 1;
@@ -50,41 +63,52 @@ public class GameManager : MonoBehaviour {
 
 
 
-    //For the level .txt file reading
+    //For the level .xml file reading
 
+     public string level;
     public TextAsset levelsFile;
-
-    string[] lines;
+    
+    public XmlDocument readerXML=new XmlDocument();
+    List<string> conflicts=new List<string>();
     int lineCounter;
-    public string level;
 
-    string[] elements;
+    string[] elements=new string[3];
     float timesinceStart;
 
     char delimiter = '-';
 
+
+
+    //conflict activated
     string actualConflict;
-    
+
+    //Mode of the task
+    string taskType;
 
     int minutesSinceStart, secondsSinceStart,timer1,timer2;
 
     // Use this for initialization
     void Awake () {
+	 // En este caso, hay que llenar columns y rows a pincho, pero deberían leerse del archivo
+        rows = 4;
+        columns = 3;
+        students = new Student[rows, columns];																							  
         // Cargar habilidades y estudiantes
         skillGo = GameObject.FindGameObjectsWithTag("Skill");
         foreach (GameObject sk in skillGo) {
             skills.Add(sk.GetComponent<Skill>());
         }
         studentGo = GameObject.FindGameObjectsWithTag("Students");
+		
+		
+		listeningStudents = new ArrayList();
+        disturbingStudents = new ArrayList();									
         foreach (GameObject st in studentGo)
         {
-            students.Add(st.GetComponent<Student>());
+            Student s = st.GetComponent<Student>();
+			students[s.row, s.column] = s;
+            listeningStudents.Add(s);							  
         }
-        //taskGo = GameObject.FindGameObjectsWithTag("Task");
-        //foreach (GameObject ts in taskGo)
-        //{
-        //    tasks.Add(ts.GetComponent<Task>());
-        //}
 
         stress = 0;
         actualTask = 1;
@@ -94,10 +118,11 @@ public class GameManager : MonoBehaviour {
     {
         totalLevelTime = totalTime;
 
-        //lines = System.IO.File.ReadAllLines(@"Assets/Resources/levels/" + level + ".txt");
-        lines = levelsFile.text.Split('\n');
-        foreach (string s in lines)
-            print(s);
+        
+
+        readerXML.Load(@"Assets/Resources/levels/" + level + ".xml");
+
+       
 
         readTasks();
 
@@ -136,6 +161,10 @@ public class GameManager : MonoBehaviour {
         {
             setStress(5);
             print("THASMORIO");
+            killedSprite.SetActive(true);
+            if (Input.GetMouseButtonDown(0))
+
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             // PUN
         }
 
@@ -156,20 +185,66 @@ public class GameManager : MonoBehaviour {
 
         //Decrease cooldown skills
 
-
-
-
-        //Increasing task each seconds (keeping in mind the multiplier)
-        timer2 = timer1;
-        timer1 = (int)Time.realtimeSinceStartup;
-        if (timer1 > timer2)
+		foreach(Skill sk in skills)
         {
-            taskCompletion=taskCompletion-(1*taskMultiplier);//every second we 
+            // print(sk.name + " tiene " + sk.cooldown + " de cooldown");
+            if (sk.cooldown > 1 && sk.onCooldown)
+            {
+                sk.cooldown--;
+
+            }
+            else if (sk.cooldown == 1 && sk.onCooldown)
+            {
+                sk.cooldown--;
+                sk.toggleCooldown();
+            }
         }
 
 
+        switch (taskType)
+        {
+            case "Talk":
+                //Increasing task each seconds (keeping in mind the multiplier), we have to alsokeep in mind the ones destroyed
+                timer2 = timer1;
+                timer1 = (int)Time.realtimeSinceStartup;
+                if (timer1 > timer2)
+                {
+                    taskCompletion = taskCompletion - (1 * taskMultiplier);//every second we 
+                }
+                break;
+            case "Work":
+                if (totalStudentsDisturbing > 0)//If there is someone disturnbing, keep in mind that they could be destroyed will not affect
+                {
+                    taskMultiplier = 0;
+                    timer2 = timer1;
+                    timer1 = (int)Time.realtimeSinceStartup;
+                    if (timer1 > timer2)
+                    {
+                        taskCompletion = taskCompletion - (1 * taskMultiplier);//every second we 
+                    }
+                }
+                else
+                {
+                    //Increasing task each seconds (keeping in mind the multiplier)
+                    timer2 = timer1;
+                    timer1 = (int)Time.realtimeSinceStartup;
+                    if (timer1 > timer2)
+                    {
+                        taskCompletion = taskCompletion - (1 * taskMultiplier);//every second we 
+                    }
+                }
+                break;
+            case "Blackboard":
+                break;
+            default:
+                print("ERROR");
+                break;
+        }
+        
+        
+
+
         // Incremento de tarea
-        //taskCompletion -= 1 * taskMultiplier;
         float percentage = (100 * (totalTaskDuration - taskCompletion)) / totalTaskDuration;
         taskCompletionText.text = ((int)percentage).ToString() + "%";
         print("Task "+tasks[actualTask].title+ " needs "+ taskCompletion+ " more seconds to finish");
@@ -178,10 +253,11 @@ public class GameManager : MonoBehaviour {
         {
             actualTask++;
             setTask(actualTask);
+            
         }
 
         //activate conflicts
-        if ((lineCounter < lines.Length)) //change to foreach (string row in lines)
+        if ((lineCounter < conflicts.Count)) //change to foreach (string row in lines)
         {
             timesinceStart = Time.realtimeSinceStartup;
             secondsSinceStart = (int)timesinceStart % 60;
@@ -189,14 +265,15 @@ public class GameManager : MonoBehaviour {
             string time = minutesSinceStart + ":" + secondsSinceStart.ToString("00");
 
             print(time);
-            elements = lines[lineCounter].Split(delimiter);
+            elements = conflicts[lineCounter].Split(delimiter);
 
-            if ((lines[lineCounter] != "") && (elements[0] == time))
+            if ((conflicts[lineCounter] != "") && (elements[0] == time))
             {
 
                 //We activate the conflict with the same name as elements[1]
                 //
                 print(elements[1] + " conflict has been activated...");
+                print(elements[1].GetType());
 
                 actualConflict = GetComponent<Conflict>().getTypeConflict(elements[1]);
 
@@ -216,10 +293,7 @@ public class GameManager : MonoBehaviour {
 
     void skillClicked(Skill skill)
     {
-        if(activeSkill != null)
-        {
-            activeSkill.unHighlight();
-        }
+        
         activeSkill = skill; // Para poder hacer las acciones individuales
         activeSkill.highlight();
 
@@ -232,13 +306,12 @@ public class GameManager : MonoBehaviour {
                 }
             case Skill.SkillType.Unstress: {
                     activeSkill.action();
-                    activeSkill.unHighlight();
+                    
                     unHighlightStudents();
                     break;
                 }
             case Skill.SkillType.Massive: {
                     activeSkill.action(students);
-                    activeSkill.unHighlight();
                     unHighlightStudents();
                     foreach(Student s in students)
                     {
@@ -255,7 +328,6 @@ public class GameManager : MonoBehaviour {
     void studentClicked(Student s)
     {
         activeSkill.action(s);
-        activeSkill.unHighlight();
         activeSkill = null;
         unHighlightStudents();
         s.setColor(Color.white);
@@ -275,68 +347,81 @@ public class GameManager : MonoBehaviour {
 
     void activateConflict(string typeConflict)
     {
+        int randIndex;
         switch (typeConflict)
         {
             case "individual":
 
-                //
+				  
                 print("And is type individual");
-                foreach(Student s in students)
+
+                if(listeningStudents.Count > 0)
                 {
-                    if (s.disturbActivated == false)
-                    {
-                        s.disturbActivated = true;
-                        s.setColor(Color.red);
-                        totalStudentsDisturbing++;
-                        stressMultiplier += 0.1f;
-                        taskMultiplier -= 0.1f;
-                        break;
-                    }
+                    randIndex = Random.Range(0, listeningStudents.Count);
+                    setDisturbingStudent(randIndex);
+												  
+											  
+												  
+												 
+																	  
+														 
+							  
+					 
                 }
+
+                stressMultiplier += 0.1f;
+                taskMultiplier -= 0.1f;
                
                 break;
             case "dual":
 
-                //
+				  
                 print("And is type dual");
 
-                int i = 0;
-                foreach (Student s in students)
+                if (listeningStudents.Count > 1)
+											   
                 {
-                    if (s.disturbActivated == false)
-                    {
-                        s.disturbActivated = true;
-                        s.setColor(Color.red);
-                        totalStudentsDisturbing++;
-                        taskMultiplier -= 0.1f;
-                        stressMultiplier += 0.1f;
-                        i++;
-                        if (i == 2)
-                            break;
-                    }
+                    // Falta conectarlos entre ellos
+                    randIndex = Random.Range(0, listeningStudents.Count);
+                    setDisturbingStudent(randIndex);
+                    randIndex = Random.Range(0, listeningStudents.Count);
+                    setDisturbingStudent(randIndex);
+											   
+												 
+							
+								   
+								  
+					 
                 }
+
+                stressMultiplier += 0.3f;
+                taskMultiplier -= 0.3f;
+
                 break;
             case "massive":
-                //
+              
                 print("And is type massive");
 
-
-                int i2 = 0;
-                foreach (Student s in students)
+                if (listeningStudents.Count > 3)
+						   
+											   
                 {
-                    if (s.disturbActivated == false)
-                    {
-                     //implementar liante y asociados
-                        s.disturbActivated = true;
-                        s.setColor(Color.red);
-                        totalStudentsDisturbing++;
-                        taskMultiplier -= 0.1f;
-                        stressMultiplier += 0.1f;
-                        i2++;
-                        if (i2 == 4)
-                            break;
-                    }
+                    // Falta conectarlos entre ellos
+                    randIndex = Random.Range(0, listeningStudents.Count);
+                    setDisturbingStudent(randIndex);
+                    randIndex = Random.Range(0, listeningStudents.Count);
+                    setDisturbingStudent(randIndex);
+                    randIndex = Random.Range(0, listeningStudents.Count);
+                    setDisturbingStudent(randIndex);
+                    randIndex = Random.Range(0, listeningStudents.Count);
+                    setDisturbingStudent(randIndex);
+									
+								  
+					 
                 }
+
+                stressMultiplier += 0.3f;
+                taskMultiplier -= 0.3f;
 
                 break;
             default:
@@ -357,7 +442,8 @@ public class GameManager : MonoBehaviour {
     void studentDestroyed(Student s)
     {
         // Quitar puntos
-        students.Remove(s);
+        students[s.row, s.column] = null;
+											 
     }
 
     void unHighlightStudents()
@@ -398,6 +484,9 @@ public class GameManager : MonoBehaviour {
         taskCompletion = tasks[iterator].duration;
         totalTaskDuration = taskCompletion;
         taskText.text = tasks[iterator].title;
+
+        taskType = tasks[iterator].tkType.ToString();//define the kind of task we are currently doing
+        
     }
 
 
@@ -405,36 +494,51 @@ public class GameManager : MonoBehaviour {
     //Task reader
     void readTasks()
     {
-        if (lines[lineCounter] == "--\n")
+        print("EMPECEMOS CON EL XML");
+        XmlNodeList nodesDocument = readerXML.DocumentElement.SelectNodes("/Level/Tasks/Task");
+        
+        foreach(XmlNode node in nodesDocument)//reading from the XML
         {
-            print("WOAH MAN");
-        }
-
-        while (lines[lineCounter] != "--")
-        {
-            print(lines[lineCounter]);
-
-            elements = lines[lineCounter].Split(delimiter);
-            print(lineCounter);
-            //
+            
+            elements[0]= node.SelectSingleNode("Type").InnerText;
+            elements[1] = node.SelectSingleNode("Title").InnerText;
+            elements[2] = node.SelectSingleNode("Duration").InnerText;
             print("Type: " + elements[0]);
             print("Title: " + elements[1]);
             print("Duration: " + elements[2]);
+            tasks.Add(new Task(elements[0], elements[1], float.Parse(elements[2])));
 
-            //Creates a task, the time it keeps to complete it (elements[2]) we define it in each level .txt file or we keep all of them in a DB?
-            tasks.Add(new Task(elements[0], elements[1], float.Parse(elements[2]))); //We add all the tasks of the file in a list
-            
-            
-
-            lineCounter++;
         }
-        lineCounter++;
 
-        print("--STARTING WALKTHROUGH--");
+        nodesDocument = readerXML.DocumentElement.SelectNodes("/Level/Walkthrough/Event");
+
+        print("Y AHORA LOS CONFLICTOS WOP WOP");
+        print(nodesDocument.Count);
+        foreach (XmlNode node in nodesDocument)//reading from the XML
+        {
+            print("Time: " + node.SelectSingleNode("Time").InnerText);
+            print("Title: " + node.SelectSingleNode("Type").InnerText);
+            conflicts.Add(node.SelectSingleNode("Time").InnerText + "-" + node.SelectSingleNode("Type").InnerText);
+            
+        }
+
+        print("Hay " + conflicts.Count + " conflictos");
+
+
+
+            print("--STARTING WALKTHROUGH--");
     }
 
     public void setStress(int stressLevel)
     {
         stressBar.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/stressBar_" + stressLevel);
     }
+	private void setDisturbingStudent(int randIndex)
+    {
+        Student s = (Student)listeningStudents[randIndex];
+        s.disturbActivated = true;
+        s.setColor(Color.red);
+        disturbingStudents.Add(s);
+        listeningStudents.Remove(s);
+    }											  
 }

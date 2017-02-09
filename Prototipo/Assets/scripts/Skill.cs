@@ -7,7 +7,9 @@ public abstract class Skill : MonoBehaviour {
     public int stressCost;
     public enum SkillType { Individual,Unstress,Massive};
     public SkillType skType;
-    public int pos; // No sé por qué tengo esto
+    public bool onCooldown = false;
+    public int cooldown;
+    protected int TOTAL_COOLDOWN;
     protected GameObject gameManager;
 
 	// Use this for initialization
@@ -34,20 +36,23 @@ public abstract class Skill : MonoBehaviour {
 
     }
 
-    public virtual void action(List<Student> s)
+    public virtual void action(Student[,]s)
     {
 
     }
 
     void OnMouseDown()
     {
-        setColor(Color.red);
-        GameObject manager = GameObject.FindGameObjectWithTag("Manager");
-        if (manager == null)
+        if(!onCooldown)
         {
-            print("no hay manager :(");
+            setColor(Color.red);
+            GameObject manager = GameObject.FindGameObjectWithTag("Manager");
+            if (manager == null)
+            {
+                print("no hay manager :(");
+            }
+            manager.SendMessage("skillClicked", this);
         }
-        manager.SendMessage("skillClicked", this);
     }
 
     private void setColor(Color color)
@@ -56,6 +61,9 @@ public abstract class Skill : MonoBehaviour {
         if (_renderer != null)
         {
             _renderer.color = color;
+        } else
+        {
+            print("no hay renderer :(");
         }
     }
 
@@ -68,6 +76,20 @@ public abstract class Skill : MonoBehaviour {
     public void unHighlight()
     {
         this.setColor(Color.white);
+    }
+
+    public void toggleCooldown()
+    {
+        if(onCooldown)
+        {
+            this.onCooldown = false;
+            this.setColor(Color.white);
+            this.cooldown = TOTAL_COOLDOWN;
+        } else
+        {
+            this.onCooldown = true;
+            this.setColor(Color.black);
+        }
     }
 
 }
