@@ -1,0 +1,16 @@
+Talk-"How to print without spending too much color cartridge"
+Talk-"Making jokes like a human"
+Talk-"Asimov, who was him and how wrong he was about robots" 
+Work-"Advanced power management, how to improve the performance of your battery"
+Blackboard-"Blue screen, what is and how to deal with it"
+--
+0:10-playingConflict
+0:20-screensaverConflict
+0:25-paperbulletfightConflict
+0:35-shockingConflict
+0:45-internetConflict
+0:50-mailingConflict
+1:00-internetConflict
+1:00-annoyingnoisesConflict
+1:20-shockingConflict
+1:25-arguingwindowConflict

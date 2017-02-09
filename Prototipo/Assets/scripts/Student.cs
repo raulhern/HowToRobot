@@ -6,6 +6,11 @@ public class Student : MonoBehaviour {
     public int row;
     public int column;
     bool individualSkillClicked = false;
+    public bool disturbActivated;
+
+
+    public bool activated = true;
+    public int cooldown;
 
 	// Use this for initialization
 	void Start () {
@@ -16,6 +21,16 @@ public class Student : MonoBehaviour {
 	void Update () {
 	
 	}
+
+    public void disturb(string conflict)
+    {
+        // parseo
+        if(disturbActivated)
+        {
+            // tipo
+            // incremento de estrés y reducción de tarea;
+        }
+    }
 
     public IEnumerator glow()
     {
@@ -44,6 +59,9 @@ public class Student : MonoBehaviour {
     public void unGlow()
     {
         StopCoroutine("glow");
+        Color tmp = GetComponent<SpriteRenderer>().color;
+        tmp.a = 1f;
+        GetComponent<SpriteRenderer>().color = tmp;
     }
 
     void OnMouseDown()
@@ -56,6 +74,18 @@ public class Student : MonoBehaviour {
                 print("no hay manager :(");
             }
             manager.SendMessage("studentClicked", this);
+
+            //adaptar al tipo de skill que le ha tocado
+            cooldown = 5;
+        }
+    }
+
+    public void setColor(Color color)
+    {
+        var _renderer = GetComponent<SpriteRenderer>();
+        if (_renderer != null)
+        {
+            _renderer.color = color;
         }
     }
 }
