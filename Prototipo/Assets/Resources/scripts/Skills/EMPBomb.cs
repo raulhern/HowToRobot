@@ -8,7 +8,7 @@ public class EMPBomb : Skill {
 	void Start () {
         stressCost = 4;
         skType = SkillType.Massive;
-        TOTAL_COOLDOWN = 1875; // 30s
+        TOTAL_COOLDOWN = 30; // 30s
         cooldown = TOTAL_COOLDOWN;
 	}
 	

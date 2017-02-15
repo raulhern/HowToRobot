@@ -214,16 +214,19 @@ public class GameManager : MonoBehaviour
                 //Decrease cooldown students
                 foreach (Student s in students)
                 {
-
-                    if (s.cooldown > 1)
+                    if(s!=null)
                     {
-                        s.cooldown--;
+                        if (s.cooldown > 1)
+                        {
+                            s.cooldown--;
+                        }
+                        else if (s.cooldown == 1)
+                        {
+                            s.cooldown--;
+                            s.activated = true;
+                        }
                     }
-                    else if (s.cooldown == 1)
-                    {
-                        s.cooldown--;
-                        s.activated = true;
-                    }
+                    
 
                 }
 
@@ -258,7 +261,7 @@ public class GameManager : MonoBehaviour
                         if (totalStudentsDisturbing == 0)//If there is someone disturnbing, keep in mind that they could be destroyed will not affect
                         {
 
-
+                            taskMultiplier = 1;
                             taskCompletion = taskCompletion - (1 * taskMultiplier);//every second we 
 
                         }
@@ -514,7 +517,10 @@ public class GameManager : MonoBehaviour
     {
         foreach (Student s in students)
         {
-            s.unGlow();
+            if(s != null)
+            {
+                s.unGlow();
+            }
         }
     }
 
