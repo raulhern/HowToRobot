@@ -9,6 +9,8 @@ TagManager:
   - Students
   - Timer
   - Task
+  - Shortcircuit
+  - Bomb
   layers:
   - Default
   - TransparentFX
