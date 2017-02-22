@@ -11,6 +11,9 @@ TagManager:
   - Task
   - Shortcircuit
   - Bomb
+  - Laserchalk
+  - Teacherhand
+  - Patata
   layers:
   - Default
   - TransparentFX
@@ -20,7 +23,7 @@ TagManager:
   - UI
   - 
   - 
-  - 
+  - Students
   - 
   - 
   - 

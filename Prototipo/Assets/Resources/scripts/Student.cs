@@ -10,7 +10,8 @@ public class Student : MonoBehaviour {
 
 
     public bool activated = true;
-    public int cooldown=5;
+    public bool target = false;
+    public int cooldown=0;
 
 	// Use this for initialization
 	void Start () {
@@ -28,8 +29,27 @@ public class Student : MonoBehaviour {
         // parseo
         if(disturbActivated)
         {
-            // tipo
-            // incremento de estrés y reducción de tarea;
+            switch(conflict)
+            {
+                case "gaming":
+                    this.GetComponent<Animator>().Play("student_play", -1, 0f);
+                    break;
+                case "screensaver":
+                    this.GetComponent<Animator>().Play("student_sleeping", -1, 0f);
+                    break;
+                case "internet":
+                    this.GetComponent<Animator>().Play("student_netsurfing", -1, 0f);
+                    break;
+                case "mailing":
+                    this.GetComponent<Animator>().Play("student_emailing", -1, 0f);
+                    break;
+                case "annoyingNoises":
+                    this.GetComponent<Animator>().Play("student_noises", -1, 0f);
+                    break;
+                case "dancing":
+                    this.GetComponent<Animator>().Play("student_dancing", -1, 0f);
+                    break;
+            }
         }
     }
 
@@ -87,6 +107,45 @@ public class Student : MonoBehaviour {
         if (_renderer != null)
         {
             _renderer.color = color;
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if(col.gameObject.name == "laserChalk_0" && this.target == true)
+        {
+            print("Le toca");
+            GameObject chalk = col.gameObject;
+            chalk.GetComponent<AudioSource>().Play();
+            chalk.GetComponent<SpriteRenderer>().enabled = false;
+            chalk.GetComponent<Collider2D>().enabled = false;
+            toggleDisturb(false);
+        }
+    }
+
+    public void toggleDisturb(bool disturbing)
+    {
+        if(disturbing)
+        {
+            disturbActivated = true;
+        } else
+        {
+            this.GetComponent<Animator>().Play("student_idle", -1, 0f);
+            disturbActivated = false;
+        }
+    }
+
+    public void toggleConnected()
+    {
+        if(activated)
+        {
+            activated = false;
+            cooldown = 5;
+            this.GetComponent<Animator>().Play("student_shocked", -1, 0f);
+        } else
+        {
+            activated = true;
+            this.GetComponent<Animator>().Play("student_idle", -1, 0f);
         }
     }
 }

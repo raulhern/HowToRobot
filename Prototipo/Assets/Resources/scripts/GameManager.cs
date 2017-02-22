@@ -223,7 +223,8 @@ public class GameManager : MonoBehaviour
                         else if (s.cooldown == 1)
                         {
                             s.cooldown--;
-                            s.activated = true;
+                            s.toggleConnected();
+                            listeningStudents.Add(s);
                         }
                     }
                     
@@ -322,7 +323,7 @@ public class GameManager : MonoBehaviour
 
 
 
-                        activateConflict(actualConflict);
+                        activateConflict(actualConflict, elements[1]);
 
                         print("Time: " + elements[0]);
                         print("Type: " + elements[1]);
@@ -343,6 +344,13 @@ public class GameManager : MonoBehaviour
         {
             activeSkill = skill; // Para poder hacer las acciones individuales
             activeSkill.highlight();
+            foreach(Skill sk in skills) // Desactivar habilidades inactivas
+            {
+                if(sk != activeSkill && !sk.onCooldown)
+                {
+                    sk.unHighlight();
+                }
+            }
 
             // Distinguir entre habilidad de relax, masiva e individual
             switch (skill.skType)
@@ -365,11 +373,13 @@ public class GameManager : MonoBehaviour
                         unHighlightStudents();
                         foreach (Student s in students)
                         {
-                            s.setColor(Color.white);
-                            s.disturbActivated = false;
-                            //we put it again in the listening students list
-                            disturbingStudents.Remove(s);
-                            listeningStudents.Add(s);
+                            if(s != null)
+                            {
+                                s.setColor(Color.white);
+                                //we put it again in the listening students list
+                                disturbingStudents.Remove(s);
+                                listeningStudents.Add(s);
+                            }
                         }
                         taskMultiplier = 1;
                         stressMultiplier = 0;
@@ -379,7 +389,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            print("You have not stress enough");
+            print("You have not enough stress");
         }
     }
 
@@ -389,11 +399,13 @@ public class GameManager : MonoBehaviour
         activeSkill = null;
         unHighlightStudents();
         s.setColor(Color.white);
-        s.disturbActivated = false;
 
         //we put it again in the listening students list
         disturbingStudents.Remove(s);
-        listeningStudents.Add(s);
+        if(s.activated) // Controlamos que no le hayamos apagado
+        {
+            listeningStudents.Add(s);
+        }
 
 
         if (stressMultiplier >= 0.1f)
@@ -409,7 +421,7 @@ public class GameManager : MonoBehaviour
 
 
 
-    void activateConflict(string typeConflict)
+    void activateConflict(string typeConflict, string conflict)
     {
         int randIndex;
         switch (typeConflict)
@@ -422,7 +434,7 @@ public class GameManager : MonoBehaviour
                 if (listeningStudents.Count > 0)
                 {
                     randIndex = Random.Range(0, listeningStudents.Count);
-                    setDisturbingStudent(randIndex);
+                    setDisturbingStudent(randIndex, conflict);
 
 
                 }
@@ -441,9 +453,9 @@ public class GameManager : MonoBehaviour
                 {
                     // Falta conectarlos entre ellos
                     randIndex = Random.Range(0, listeningStudents.Count);
-                    setDisturbingStudent(randIndex);
+                    setDisturbingStudent(randIndex, conflict);
                     randIndex = Random.Range(0, listeningStudents.Count);
-                    setDisturbingStudent(randIndex);
+                    setDisturbingStudent(randIndex, conflict);
 
 
 
@@ -466,13 +478,13 @@ public class GameManager : MonoBehaviour
                 {
                     // Falta conectarlos entre ellos
                     randIndex = Random.Range(0, listeningStudents.Count);
-                    setDisturbingStudent(randIndex);
+                    setDisturbingStudent(randIndex, conflict);
                     randIndex = Random.Range(0, listeningStudents.Count);
-                    setDisturbingStudent(randIndex);
+                    setDisturbingStudent(randIndex, conflict);
                     randIndex = Random.Range(0, listeningStudents.Count);
-                    setDisturbingStudent(randIndex);
+                    setDisturbingStudent(randIndex, conflict);
                     randIndex = Random.Range(0, listeningStudents.Count);
-                    setDisturbingStudent(randIndex);
+                    setDisturbingStudent(randIndex, conflict);
 
 
 
@@ -493,7 +505,10 @@ public class GameManager : MonoBehaviour
 
         foreach (Student s in students)
         {
-            s.StartCoroutine("glow");
+            if(s!=null)
+            {
+                s.StartCoroutine("glow");
+            }
         }
     }
 
@@ -503,13 +518,14 @@ public class GameManager : MonoBehaviour
         if (disturbingStudents.Contains(s))
         {
             disturbingStudents.Remove(s);
-        }else if (listeningStudents.Contains(s))
+        }
+        if (listeningStudents.Contains(s))
         {
             listeningStudents.Remove(s);
         }
+        Destroy(s.gameObject);
         // Quitar puntos
-        students[s.row, s.column] = null;
-        
+
 
     }
 
@@ -610,17 +626,19 @@ public class GameManager : MonoBehaviour
         stressBar.GetComponent<SpriteRenderer>().sprite = Resources.Load<Sprite>("sprites/stressBar_" + stressLevel);
 
     }
-    private void setDisturbingStudent(int randIndex)
+    private void setDisturbingStudent(int randIndex, string conflict)
     {
+        
         Student s = (Student)listeningStudents[randIndex];
-        s.disturbActivated = true;
-        s.setColor(Color.red);
+        s.toggleDisturb(true);
+        s.disturb(conflict);
         disturbingStudents.Add(s);
         listeningStudents.Remove(s);
     }
 
 
-     IEnumerator gameOver (string deadby)
+
+    IEnumerator gameOver (string deadby)
     {
         print("ENTRO??");
         switch (deadby){
@@ -656,7 +674,7 @@ public class GameManager : MonoBehaviour
 	
 	
 	//Show time
-	    void updateTime()
+	void updateTime()
     {
         int seconds = (int)timeLeft % 60;
         int minutes = (int)timeLeft / 60;

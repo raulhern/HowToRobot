@@ -30,8 +30,8 @@ public class Shutdown : Skill {
         GetComponent<AudioSource>().Play();
 
 
-        s.disturbActivated = false;
-        s.activated = false;
+        s.toggleDisturb(false);
+        s.toggleConnected();
         // esto sería, no? Desactivar tanto el molestar como al chaval
         this.toggleCooldown();
     }

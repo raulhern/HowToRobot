@@ -38,11 +38,11 @@
 		</Event>
 		<Event>
 			<Time>0:25</Time>
-			<Type>paperBulletFight</Type>
+			<Type>dancing</Type>
 		</Event>
 		<Event>
 			<Time>0:35</Time>
-			<Type>shocking</Type>
+			<Type>gaming</Type>
 		</Event>
 		<Event>
 			<Time>0:45</Time>
@@ -62,7 +62,7 @@
 		</Event>
 		<Event>
 			<Time>1:20</Time>
-			<Type>shocking</Type>
+			<Type>mailing</Type>
 		</Event>
 		<Event>
 			<Time>1:25</Time>
