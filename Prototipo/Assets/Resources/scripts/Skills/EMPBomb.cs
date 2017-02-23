@@ -22,9 +22,12 @@ public class EMPBomb : Skill {
         print("bombaso");
         foreach(Student student in s)
         {
-            print("estudiante " + student.row + "x" + student.column + " estuneao");
-            student.toggleDisturb(false);
-            student.toggleConnected();
+            if(student != null)
+            {
+                print("estudiante " + student.row + "x" + student.column + " estuneao");
+                student.setDisturbing(false);
+                student.setConnected(false);
+            }
         }
         // Animación
         GameObject bomb = GameObject.FindGameObjectWithTag("Bomb");

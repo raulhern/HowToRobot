@@ -27,7 +27,7 @@ public class Count1010 : Skill {
         } else
         {
             gameManager.GetComponent<GameManager>().stress -= 40;
-            gameManager.GetComponent<GameManager>().setStress((int)gameManager.GetComponent<GameManager>().stress/20);
+            gameManager.GetComponent<GameManager>().setStress((int)gameManager.GetComponent<GameManager>().stress/2);
         }
         GetComponent<AudioSource>().Play();
         // Comenzar corrutina de relajarse: gameManager.startCoroutine("Relax", CuantoRelajaEsto);

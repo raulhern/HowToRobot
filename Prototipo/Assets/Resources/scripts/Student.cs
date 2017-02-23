@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Student : MonoBehaviour {
 
@@ -13,10 +14,35 @@ public class Student : MonoBehaviour {
     public bool target = false;
     public int cooldown=0;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
+    public ArrayList links;
+    public bool instigator = false;
+
+    Dictionary<string, AudioClip> audioClips;
+
+    // Use this for initialization
+    void Start () {
+        links = new ArrayList();
+        audioClips = new Dictionary<string, AudioClip>();
+        audioClips.Add("chat_A", Resources.Load<AudioClip>("sfx/students/chat_A"));
+        audioClips.Add("chat_B", Resources.Load<AudioClip>("sfx/students/chat_B"));
+        audioClips.Add("dance_disco", Resources.Load<AudioClip>("sfx/students/dance_disco"));
+        audioClips.Add("dance_salsa", Resources.Load<AudioClip>("sfx/students/dance_salsa"));
+        audioClips.Add("draw", Resources.Load<AudioClip>("sfx/students/draw"));
+        audioClips.Add("emails", Resources.Load<AudioClip>("sfx/students/emails"));
+        audioClips.Add("funnyNoises_A", Resources.Load<AudioClip>("sfx/students/funnyNoises_A"));
+        audioClips.Add("funnyNoises_B", Resources.Load<AudioClip>("sfx/students/funnyNoises_B"));
+        audioClips.Add("FunnyNoises_C", Resources.Load<AudioClip>("sfx/students/FunnyNoises_C"));
+        audioClips.Add("internet_long", Resources.Load<AudioClip>("sfx/students/internet_long"));
+        audioClips.Add("internet_short", Resources.Load<AudioClip>("sfx/students/internet_short"));
+        audioClips.Add("jokes_A", Resources.Load<AudioClip>("sfx/students/jokes_A"));
+        audioClips.Add("jokes_B", Resources.Load<AudioClip>("sfx/students/jokes_B"));
+        audioClips.Add("music_A", Resources.Load<AudioClip>("sfx/students/music_A"));
+        audioClips.Add("music_B", Resources.Load<AudioClip>("sfx/students/music_B"));
+        audioClips.Add("play_long", Resources.Load<AudioClip>("sfx/students/play_long"));
+        audioClips.Add("play_short", Resources.Load<AudioClip>("sfx/students/play_short"));
+        audioClips.Add("sleep", Resources.Load<AudioClip>("sfx/students/sleep"));
+        audioClips.Add("windowArgue", Resources.Load<AudioClip>("sfx/students/windowArgue"));
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -33,21 +59,27 @@ public class Student : MonoBehaviour {
             {
                 case "gaming":
                     this.GetComponent<Animator>().Play("student_play", -1, 0f);
+                    this.GetComponent<AudioSource>().clip = audioClips["play_long"];
                     break;
                 case "screensaver":
                     this.GetComponent<Animator>().Play("student_sleeping", -1, 0f);
+                    this.GetComponent<AudioSource>().clip = audioClips["sleep"];
                     break;
                 case "internet":
                     this.GetComponent<Animator>().Play("student_netsurfing", -1, 0f);
+                    this.GetComponent<AudioSource>().clip = audioClips["internet_long"];
                     break;
                 case "mailing":
                     this.GetComponent<Animator>().Play("student_emailing", -1, 0f);
+                    this.GetComponent<AudioSource>().clip = audioClips["emails"];
                     break;
                 case "annoyingNoises":
                     this.GetComponent<Animator>().Play("student_noises", -1, 0f);
+                    this.GetComponent<AudioSource>().clip = audioClips["FunnyNoises_C"];
                     break;
                 case "dancing":
                     this.GetComponent<Animator>().Play("student_dancing", -1, 0f);
+                    this.GetComponent<AudioSource>().clip = audioClips["dance_salsa"];
                     break;
             }
         }
@@ -119,11 +151,12 @@ public class Student : MonoBehaviour {
             chalk.GetComponent<AudioSource>().Play();
             chalk.GetComponent<SpriteRenderer>().enabled = false;
             chalk.GetComponent<Collider2D>().enabled = false;
-            toggleDisturb(false);
+            setDisturbing(false);
+            target = false;
         }
     }
 
-    public void toggleDisturb(bool disturbing)
+    public void setDisturbing(bool disturbing)
     {
         if(disturbing)
         {
@@ -131,21 +164,52 @@ public class Student : MonoBehaviour {
         } else
         {
             this.GetComponent<Animator>().Play("student_idle", -1, 0f);
+            this.GetComponent<AudioSource>().Stop();
             disturbActivated = false;
         }
     }
 
-    public void toggleConnected()
+    public void setConnected(bool conected)
     {
-        if(activated)
+        if(!conected)
         {
             activated = false;
             cooldown = 5;
             this.GetComponent<Animator>().Play("student_shocked", -1, 0f);
+            this.GetComponent<AudioSource>().Stop();
         } else
         {
             activated = true;
             this.GetComponent<Animator>().Play("student_idle", -1, 0f);
+            this.GetComponent<AudioSource>().Stop();
         }
+    }
+
+    public void link(Student s)
+    {
+        this.links.Add(s);
+        s.links.Add(this);
+    }
+    public void link(Student a, Student b, Student c)
+    {
+        // links a
+        this.links.Add(a);
+        this.links.Add(b);
+        this.links.Add(c);
+
+        // links b
+        a.links.Add(this);
+        a.links.Add(b);
+        a.links.Add(c);
+
+        // links c
+        b.links.Add(this);
+        b.links.Add(a);
+        b.links.Add(c);
+
+        // links d
+        c.links.Add(this);
+        c.links.Add(a);
+        c.links.Add(b);
     }
 }

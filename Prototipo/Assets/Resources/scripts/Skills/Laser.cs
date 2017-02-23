@@ -40,7 +40,8 @@ public class Laser : Skill
         line.enabled = true;
         LASER = true;
         pos = patata.transform;
-        
+
+        s.setConnected(false);
         gameManager.SendMessage("studentDestroyed", s);
         this.toggleCooldown();
     }
