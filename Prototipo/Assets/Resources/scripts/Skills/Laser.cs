@@ -3,46 +3,56 @@ using System.Collections;
 
 public class Laser : Skill
 {
-
-    LineRenderer line;
+    
     GameObject teacherHand;
-    GameObject patata;
-    bool LASER = false;
-    Transform pos;
+    GameObject laserRay;
+    public bool increase = false;
+    bool activateResize = false;
 
     // Use this for initialization
     void Start()
     {
-        stressCost = 1;
+        stressCost = 3;
         skType = SkillType.Individual;
         TOTAL_COOLDOWN = 20; // 20s
         cooldown = TOTAL_COOLDOWN;
-        line = GetComponent<LineRenderer>();
         teacherHand = GameObject.FindGameObjectWithTag("Teacherhand");
+        laserRay = GameObject.FindGameObjectWithTag("Laserray");
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(LASER)
+        if(increase && activateResize)
         {
-            line.SetPosition(0, teacherHand.transform.position);
-            line.SetPosition(1, pos.position);
+            laserRay.transform.localScale += new Vector3(0, 0.05f, 0);
+        }
+        else if(!increase && activateResize)
+        {
+            laserRay.transform.localScale -= new Vector3(0, 0.05f, 0);
+        }
+
+        if(laserRay.transform.localScale.y <= 0)
+        {
+            activateResize = false;
+            laserRay.transform.position = teacherHand.transform.position;
+            laserRay.GetComponent<SpriteRenderer>().flipY = false;
         }
     }
 
     public override void action(Student s)
     {
         print("He destruido al estudiante " + s.row + "x" + s.column);
+													   
         GetComponent<AudioSource>().Play();
-
-        patata = GameObject.FindGameObjectWithTag("Patata");
-        line.enabled = true;
-        LASER = true;
-        pos = patata.transform;
-
+        // Animación
+        laserRay.transform.position = teacherHand.transform.position;
+        laserRay.transform.localScale += new Vector3(0, 0.1f, 0);
+        laserRay.transform.up = (laserRay.transform.position - s.transform.position).normalized;
+        activateResize = true;
+        increase = true;
+        s.target = true;
         s.setConnected(false);
-        gameManager.SendMessage("studentDestroyed", s);
         this.toggleCooldown();
     }
 }

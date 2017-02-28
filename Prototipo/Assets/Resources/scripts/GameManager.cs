@@ -10,7 +10,10 @@ using UnityEngine.SceneManagement;
 // public class haber si memuero
 public class GameManager : MonoBehaviour
 {
+    
+    public Canvas pauseMenu;
 
+    public Toggle musicToggle;
     // GameObjects array
     GameObject[] skillGo; // Array a rellenar con skills para poder pasarlos a lista
     GameObject[] studentGo; // Lo mismo, pero con estudiantes
@@ -26,7 +29,7 @@ public class GameManager : MonoBehaviour
         Una vez completado el juego se debería rellenar con la información del menú
     */
     public Student[,] students;
-    public ArrayList listeningStudents;    // Lista de estudiantes atendiendo
+    ArrayList listeningStudents;    // Lista de estudiantes atendiendo
     ArrayList disturbingStudents;   // Lista de estudiantes molestando
 
     List<Task> tasks = new List<Task>();
@@ -47,8 +50,8 @@ public class GameManager : MonoBehaviour
     public static int columns;
 
     // Multipliers
-    public float taskMultiplier = 1;
-    public float stressMultiplier = 0;
+    float taskMultiplier = 1;
+    float stressMultiplier = 0;
 
     public Text timerText;
     public Text taskText;
@@ -88,6 +91,7 @@ public class GameManager : MonoBehaviour
     int timeLeft;
     string timeText, timeLeftText;
     int minutesSinceStart, secondsSinceStart, minutesTimeLeft, secondsTimeLeft, timer1, timer2;
+
 
     // Stress Bar SpriteSheet
     Sprite[] stressBarSprites;
@@ -138,9 +142,9 @@ public class GameManager : MonoBehaviour
         setTask(actualTask);
         updateTime();
 
-        timer1 = (int)Time.realtimeSinceStartup;
-
-        stressBarSprites = Resources.LoadAll<Sprite>("sprites/stressBar_spriteSheet");
+        timer1 = (int)Time.time;
+	        stressBarSprites = Resources.LoadAll<Sprite>("sprites/stressBar_spriteSheet");
+																				  
     }
 
 
@@ -150,8 +154,13 @@ public class GameManager : MonoBehaviour
     {
         // Cuenta atrás
 
+
+
+        setMusic();
+
+
         timer2 = timer1;
-        timer1 = (int)Time.realtimeSinceStartup;
+        timer1 = (int)Time.time;
         if (timer1 > timer2) //We do all the stuff  each second
         {
 
@@ -181,46 +190,24 @@ public class GameManager : MonoBehaviour
             {
                 updateTime();
                 totalStudentsDisturbing = disturbingStudents.Count;
-                if(totalStudentsDisturbing == 0) // Control cada segundo de que la clase vaya bien
+				if(totalStudentsDisturbing == 0) // Control cada segundo de que la clase vaya bien
                 {
                     stressMultiplier = 0;
                     taskMultiplier = 1;
-                }
+                }																				  
                 print("there are " + totalStudentsDisturbing + " students disturbing");
 
                 // Stress increasing
                 stress += 1 * stressMultiplier * 10;//we us the *10 to increase it faster since we synchronized with time instead of updates
-
-                setStress(stress / 2);
-                /*
-                // Cambio de barra de estrés
-                if (stress > 20 && stress <= 40)
-                {
-                    setStress(1);
-                }
-                else if (stress > 40 && stress <= 60)
-                {
-                    setStress(2);
-                }
-                else if (stress > 60 && stress <= 80)
-                {
-                    setStress(3);
-                }
-                else if (stress > 80 && stress <= 100)
-                {
-                    setStress(4);
-                }
-                else if (stress > 100)
-                {
-                    setStress(5);
+				if(stress>100){
                     print("THASMORIO");
                     deadby = "explosion";
+                    stress = 100;
                     StartCoroutine(gameOver(deadby));
+				}
+                setStress(stress / 2);
 
-                    // PUN
-                }
 
-                */
                 //Decrease cooldown students
                 foreach (Student s in students)
                 {
@@ -245,15 +232,27 @@ public class GameManager : MonoBehaviour
 
                 foreach (Skill sk in skills)
                 {
+
+
+                    if (stressBars < sk.stressCost && !sk.onCooldown)
+                        sk.setColor(Color.gray);
+                    else if (stressBars >= sk.stressCost && !sk.onCooldown)
+                        sk.setColor(Color.white);
+                    
+
+
                     // print(sk.name + " tiene " + sk.cooldown + " de cooldown");
                     if (sk.cooldown > 1 && sk.onCooldown)
                     {
                         sk.cooldown--;
+                        sk.decreaseCooldownBar();
 
                     }
                     else if (sk.cooldown == 1 && sk.onCooldown)
                     {
                         sk.cooldown--;
+
+                        sk.decreaseCooldownBar();
                         sk.toggleCooldown();
                     }
                 }
@@ -269,7 +268,7 @@ public class GameManager : MonoBehaviour
 
                         break;
                     case "Work":
-                        if (totalStudentsDisturbing == 0)//If there is someone disturbing, keep in mind that they could be destroyed will not affect
+                        if (totalStudentsDisturbing == 0)//If there is someone disturnbing, keep in mind that they could be destroyed will not affect
                         {
 
                             taskMultiplier = 1;
@@ -298,17 +297,19 @@ public class GameManager : MonoBehaviour
 
 
 
-                // Incremento de tarea
-                float percentage = (100 * (totalTaskDuration - taskCompletion)) / totalTaskDuration;
-                taskCompletionText.text = ((int)percentage).ToString() + "%";
-                print("Task " + tasks[actualTask].title + " needs " + taskCompletion + " more seconds to finish");
-                //Si la tarea se completa
+                 //Si la tarea se completa
                 if (taskCompletion <= 0)
                 {
                     actualTask++;
                     setTask(actualTask);
 
                 }
+                // Incremento de tarea
+                float percentage = (100 * (totalTaskDuration - taskCompletion)) / totalTaskDuration;
+
+                taskCompletionText.text = ((int)percentage).ToString() + "%";
+                print("Task " + tasks[actualTask].title + " needs " + taskCompletion + " more seconds to finish");
+
 
                 //activate conflicts
                 if ((lineCounter < conflicts.Count)) //change to foreach (string row in lines)
@@ -333,7 +334,7 @@ public class GameManager : MonoBehaviour
 
 
 
-                        activateConflict(actualConflict, elements[1]);
+                        activateConflict(actualConflict,elements[1]);
 
                         print("Time: " + elements[0]);
                         print("Type: " + elements[1]);
@@ -348,75 +349,72 @@ public class GameManager : MonoBehaviour
 
     }
 
-    void skillClicked(Skill skill)
+	
+	   void skillClicked(Skill skill)
     {
         if(activeSkill == skill)
         {
             skill.unHighlight();
             unHighlightStudents();
             activeSkill = null;
-        } else if (skill.stressCost < stress)
+        }
+        activeSkill = skill; // Para poder hacer las acciones individuales
+        activeSkill.highlight();
+        foreach (Skill sk in skills) // Desactivar habilidades inactivas
         {
-            activeSkill = skill; // Para poder hacer las acciones individuales
-            activeSkill.highlight();
-            foreach(Skill sk in skills) // Desactivar habilidades inactivas
+            if (sk != activeSkill && !sk.onCooldown)
             {
-                if(sk != activeSkill && !sk.onCooldown)
-                {
-                    sk.unHighlight();
-                }
-            }
-
-            // Distinguir entre habilidad de relax, masiva e individual
-            switch (skill.skType)
-            {
-                case Skill.SkillType.Individual:
-                    {
-                        highlightStudents();
-                        break;
-                    }
-                case Skill.SkillType.Unstress:
-                    {
-                        activeSkill.action();
-
-                        unHighlightStudents();
-                        break;
-                    }
-                case Skill.SkillType.Massive:
-                    {
-                        activeSkill.action(students);
-                        unHighlightStudents();
-                        foreach (Student s in students)
-                        {
-                            if(s != null)
-                            {
-                                s.setColor(Color.white);
-                                //we put it again in the listening students list
-                                disturbingStudents.Remove(s);
-                                if(!s.activated)
-                                {
-                                    listeningStudents.Remove(s);
-                                }
-                                s.links.Clear();
-                            }
-                        }
-                        taskMultiplier = 1;
-                        stressMultiplier = 0;
-                        break;
-                    }
+                sk.unHighlight();
             }
         }
-        else
+        // Distinguir entre habilidad de relax, masiva e individual
+        switch (skill.skType)
         {
-            print("You have not enough stress");
+            case Skill.SkillType.Individual:
+                {
+                    highlightStudents();
+                    break;
+                }
+            case Skill.SkillType.Unstress:
+                {
+                    activeSkill.action();
+
+                    unHighlightStudents();
+                    break;
+                }
+            case Skill.SkillType.Massive:
+                {
+                    activeSkill.action(students);
+                    unHighlightStudents();
+                    foreach (Student s in students)
+                    {
+                        if (s != null)
+                        {
+                            s.setColor(Color.white);
+
+                            //we put it again in the listening students list
+                            disturbingStudents.Remove(s);
+                            if (!s.activated)
+                            {
+                                listeningStudents.Remove(s);
+                            }
+                            s.links.Clear();
+                        }
+                    }
+                    taskMultiplier = 1;
+                    stressMultiplier = 0;
+                    break;
+                }
         }
     }
 
     void studentClicked(Student s)
     {
+							  
         if(activeSkill != null)
         {
             float newMultiplier = 0.1f;
+								   
 
             activeSkill.action(s);
             activeSkill = null;
@@ -495,6 +493,8 @@ public class GameManager : MonoBehaviour
                     changeMultiplier(0.1f);
                 }
                 
+										 
+									   
 
                 break;
             case "dual":
@@ -513,10 +513,18 @@ public class GameManager : MonoBehaviour
                     Student student2 = (Student)listeningStudents[randIndex];
                     setDisturbingStudent(student2, conflict);
 
+
+
+
+
+
                     student1.link(student2);
                     student1.GetComponent<AudioSource>().Play();
                     changeMultiplier(0.3f);
                 }
+
+										 
+									   
 
                 break;
             case "massive":
@@ -542,16 +550,22 @@ public class GameManager : MonoBehaviour
                     Student student4 = (Student)listeningStudents[randIndex];
                     setDisturbingStudent(student4, conflict);
 
+
+
                     student1.link(student2, student3, student4);
                     student1.GetComponent<AudioSource>().Play();
                     changeMultiplier(0.75f);
                 }
                 
+										 
+									   
+
                 break;
             default:
                 break;
         }
     }
+
 
     void highlightStudents()
     {
@@ -570,6 +584,12 @@ public class GameManager : MonoBehaviour
         //si estaba molestando, deberemos quitarlo de la lista
         listeningStudents.Remove(s);
         disturbingStudents.Remove(s);
+										 
+												
+		 
+										
+		 
+						
         students[s.row, s.column] = null;
         Destroy(s.gameObject);
         // Quitar puntos
@@ -587,6 +607,8 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+
+
 
     //REVISAR. VALE LA PENA TENER ESTOS VOID?
     // Task special methods
@@ -683,27 +705,27 @@ public class GameManager : MonoBehaviour
     {
         stressBars = (int)(stressLevel/10);//It's used by skill class
         stressBar.GetComponent<SpriteRenderer>().sprite = stressBarSprites[(int)stressLevel];
-
     }
 
-    private void setDisturbingStudent(Student s, string conflict)
+	    private void setDisturbingStudent(Student s, string conflict)
     {
         s.setDisturbing(true);
         s.disturb(conflict);
+							  
         disturbingStudents.Add(s);
         listeningStudents.Remove(s);
     }
 
-    IEnumerator gameOver (string deadby)
+
+     IEnumerator gameOver (string deadby)
     {
-        print("ENTRO??");
         switch (deadby){
             case "timeup":
                 timeUpSprite.SetActive(true);
                 while (!Input.GetMouseButtonDown(0))
                     yield return StartCoroutine(WaitForKeyDown(Input.GetMouseButtonDown(0)));
 
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                restartGame();
                
                 break;
             case "explosion":
@@ -713,12 +735,19 @@ public class GameManager : MonoBehaviour
                     
                     yield return StartCoroutine(WaitForKeyDown(Input.GetMouseButtonDown(0)));
                 }
-                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+
+                restartGame();
                 break;
             default:
                 print("No idea why I'm dead");
                 break;
         }
+    }
+
+    public void restartGame()
+    {
+        Time.timeScale = 1.0f;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     IEnumerator WaitForKeyDown(bool mousePressed)
@@ -728,8 +757,9 @@ public class GameManager : MonoBehaviour
     
     }
 	
+	
 	//Show time
-	void updateTime()
+	    void updateTime()
     {
         int seconds = (int)timeLeft % 60;
         int minutes = (int)timeLeft / 60;
@@ -767,6 +797,43 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    
+
+    public void exitGame()
+    {
+        print("SALIR");
+        Application.Quit();
+    }
+
+    public void TogglePauseMenu()
+    {
+        // not the optimal way but for the sake of readability
+        if (pauseMenu.GetComponentInChildren<Canvas>().enabled)
+        {
+            pauseMenu.GetComponentInChildren<Canvas>().enabled = false;
+            Time.timeScale = 1.0f;
+        }
+        else
+        {
+            pauseMenu.GetComponentInChildren<Canvas>().enabled = true;
+            Time.timeScale = 0f;
+        }
+
+        Debug.Log("GAMEMANAGER:: TimeScale: " + Time.timeScale);
+    }
+
+    public void setMusic()
+    {
+
+        if (musicToggle.isOn)
+        {
+
+            this.GetComponent<AudioSource>().mute = false;
+        }
+        else
+        {
+
+            this.GetComponent<AudioSource>().mute = true;
+        }
+    }
 
 }

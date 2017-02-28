@@ -17,11 +17,15 @@ public class Student : MonoBehaviour {
     public ArrayList links;
     public bool instigator = false;
 
+    GameObject gameManager;
+
     Dictionary<string, AudioClip> audioClips;
 
     // Use this for initialization
     void Start () {
         links = new ArrayList();
+        gameManager = GameObject.FindGameObjectWithTag("Manager");
+        // inicialización sfx
         audioClips = new Dictionary<string, AudioClip>();
         audioClips.Add("chat_A", Resources.Load<AudioClip>("sfx/students/chat_A"));
         audioClips.Add("chat_B", Resources.Load<AudioClip>("sfx/students/chat_B"));
@@ -144,15 +148,23 @@ public class Student : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D col)
     {
-        if(col.gameObject.name == "laserChalk_0" && this.target == true)
+        if(col.gameObject.tag == "Laserchalk" && this.target == true)
         {
-            print("Le toca");
             GameObject chalk = col.gameObject;
             chalk.GetComponent<AudioSource>().Play();
             chalk.GetComponent<SpriteRenderer>().enabled = false;
             chalk.GetComponent<Collider2D>().enabled = false;
             setDisturbing(false);
             target = false;
+        } else if(col.gameObject.tag == "Laserray" && this.target == true)
+        {
+            GameObject laser = GameObject.Find("laser");
+            laser.GetComponent<Laser>().increase = false;
+            col.GetComponent<SpriteRenderer>().flipY = true;
+            col.transform.position = this.transform.position;
+            target = false;
+            gameManager.SendMessage("studentDestroyed", this);
+            
         }
     }
 
@@ -174,6 +186,7 @@ public class Student : MonoBehaviour {
         if(!conected)
         {
             activated = false;
+            print("LLEGO");
             cooldown = 5;
             this.GetComponent<Animator>().Play("student_shocked", -1, 0f);
             this.GetComponent<AudioSource>().Stop();

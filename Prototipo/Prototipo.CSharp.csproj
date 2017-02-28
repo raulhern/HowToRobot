@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>5.5.0f3</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -88,14 +86,13 @@
     <Compile Include="Assets\Resources\scripts\Student.cs" />
     <Compile Include="Assets\Resources\scripts\Task.cs" />
     <Compile Include="Assets\Resources\scripts\walkthroughReader.cs" />
+    <Compile Include="Assets\UI_Manager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Resources\conflicts\conflictsList.txt" />
     <None Include="Assets\Resources\conflicts\conflictsListXML.xml" />
     <None Include="Assets\Resources\levels\Level1.txt" />
-    <None Include="Assets\Resources\levels\Level1XML.xml">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="Assets\Resources\levels\Level1XML.xml" />
     <None Include="Assets\levels\Level1.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />

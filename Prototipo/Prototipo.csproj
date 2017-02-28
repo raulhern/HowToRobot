@@ -86,11 +86,10 @@
     <Compile Include="Assets\Resources\scripts\Student.cs" />
     <Compile Include="Assets\Resources\scripts\Task.cs" />
     <Compile Include="Assets\Resources\scripts\walkthroughReader.cs" />
+    <Compile Include="Assets\UI_Manager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Resources\conflicts\conflictsList.txt" />
     <None Include="Assets\Resources\conflicts\conflictsListXML.xml" />
-    <None Include="Assets\Resources\levels\Level1.txt" />
     <None Include="Assets\Resources\levels\Level1XML.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

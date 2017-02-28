@@ -27,7 +27,7 @@ public class EMPBomb : Skill {
                 print("estudiante " + student.row + "x" + student.column + " estuneao");
                 student.setDisturbing(false);
                 student.setConnected(false);
-            }
+            } 
         }
         // Animación
         GameObject bomb = GameObject.FindGameObjectWithTag("Bomb");

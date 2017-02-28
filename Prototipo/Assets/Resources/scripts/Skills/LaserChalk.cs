@@ -8,17 +8,23 @@ public class LaserChalk : Skill {
     float speed = 5;
     Transform target;
     GameObject laserChalk;
-
+    GameObject teacherHand;
     // Use this for initialization
     void Start () {
         stressCost = 2;
         skType = SkillType.Individual;
         TOTAL_COOLDOWN = 15; // 15s
         cooldown = TOTAL_COOLDOWN;
+        
+        activateMovement = false;
     }
 	
 	// Update is called once per frame
 	void Update () {
+        if (target == null)
+        {
+            activateMovement = false;
+        }
         if(activateMovement)
         {
             laserChalk.transform.position = Vector3.MoveTowards(laserChalk.transform.position, target.position, speed * Time.deltaTime);
@@ -29,11 +35,11 @@ public class LaserChalk : Skill {
     {
         print("le he tirado una tiza al estudiante " + s.row + "x" + s.column);
         s.target = true;
-        
-        // Animación
-        laserChalk = GameObject.FindGameObjectWithTag("Laserchalk");
-        GameObject teacherHand = GameObject.FindGameObjectWithTag("Teacherhand");
 
+        // Animación
+
+        laserChalk = GameObject.FindGameObjectWithTag("Laserchalk");
+        teacherHand = GameObject.FindGameObjectWithTag("Teacherhand");
         laserChalk.transform.position = teacherHand.transform.position;
 
         target = s.transform;
